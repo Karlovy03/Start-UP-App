@@ -467,6 +467,15 @@
                                             >
                                                 <ThumbsUp size={16} /> <span>{idea.upvotes || 0}</span>
                                             </button>
+                                            
+                                            <button 
+                                                onClick={() => handleVote(idea.id, 'down')}
+                                                disabled={localVotes.support[idea.id] || localVotes.reject[idea.id]}
+                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${localVotes.reject[idea.id] ? 'bg-red-500/20 text-red-400' : 'bg-white/5 hover:bg-white/10'}`}
+                                            >
+                                                <ThumbsDown size={16} /> <span>{idea.downvotes || 0}</span>
+                                            </button>
+
                                             <button 
                                                 onClick={() => setSelectedIdea(idea)}
                                                 className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-blue-400"
