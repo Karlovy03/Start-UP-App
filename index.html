@@ -169,7 +169,7 @@
                     case 'submit': return <SubmitView showNotify={showNotify} onChangeTab={setActiveTab} />;
                     case 'bank': return <BankView ideas={ideas} loading={loading} localVotes={localVotes} setLocalVotes={setLocalVotes} showNotify={showNotify} />;
                     case 'contacts': return <ContactsView />;
-                    default: return <HomeView />;
+                    default: return <HomeView onChangeTab={setActiveTab} />;
                 }
             };
 
@@ -265,7 +265,7 @@
                             <p className="text-slate-400 mb-6 leading-relaxed">
                                 Бажаєш покращити робочий процес, запропонувати технічне нововведення або змінити підхід до служби? Твій голос важливий.
                             </p>
-                            <button onClick={() => onChangeTab && onChangeTab('submit')} className="flex items-center gap-2 text-blue-400 font-bold hover:text-blue-300 group-hover:gap-3 transition-all">
+                            <button onClick={() => onChangeTab('submit')} className="flex items-center gap-2 text-blue-400 font-bold hover:text-blue-300 group-hover:gap-3 transition-all cursor-pointer z-20 relative">
                                 Подати ідею <ChevronRight size={18} />
                             </button>
                         </div>
@@ -279,7 +279,7 @@
                             <p className="text-slate-400 mb-6 leading-relaxed">
                                 Переглядай банк ідей, голосуй за найкращі пропозиції та долучайся до обговорення в коментарях.
                             </p>
-                            <button onClick={() => onChangeTab && onChangeTab('bank')} className="flex items-center gap-2 text-emerald-400 font-bold hover:text-emerald-300 group-hover:gap-3 transition-all">
+                            <button onClick={() => onChangeTab('bank')} className="flex items-center gap-2 text-emerald-400 font-bold hover:text-emerald-300 group-hover:gap-3 transition-all cursor-pointer z-20 relative">
                                 Переглянути банк <ChevronRight size={18} />
                             </button>
                         </div>
