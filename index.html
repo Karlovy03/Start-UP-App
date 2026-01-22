@@ -66,7 +66,7 @@
         import { createRoot } from 'react-dom/client';
         import { 
             Home, Lightbulb, Database, Phone, Search, ThumbsUp, ThumbsDown, 
-            MessageSquare, Send, User, Clock, Menu, X, ChevronRight, ShieldAlert, Loader2 
+            MessageSquare, Send, User, Clock, Menu, X, ChevronRight, ChevronLeft, ShieldAlert, Loader2 
         } from 'lucide-react';
 
         // --- КОНФІГУРАЦІЯ ---
@@ -390,6 +390,8 @@
         function BankView({ ideas, loading, localVotes, setLocalVotes, showNotify }) {
             const [search, setSearch] = useState('');
             const [selectedIdea, setSelectedIdea] = useState(null);
+            const [currentPage, setCurrentPage] = useState(1);
+            const itemsPerPage = 10;
 
             const filteredIdeas = useMemo(() => {
                 return ideas.filter(idea => 
@@ -397,6 +399,17 @@
                     (idea.author && idea.author.toLowerCase().includes(search.toLowerCase()))
                 );
             }, [ideas, search]);
+
+            // Скидання сторінки при пошуку
+            useEffect(() => {
+                setCurrentPage(1);
+            }, [search]);
+
+            // Логіка пагінації
+            const totalPages = Math.ceil(filteredIdeas.length / itemsPerPage);
+            const indexOfLastItem = currentPage * itemsPerPage;
+            const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+            const currentItems = filteredIdeas.slice(indexOfFirstItem, indexOfLastItem);
 
             const handleVote = async (id, type) => {
                 if (localVotes.support[id] || localVotes.reject[id]) return;
@@ -443,50 +456,89 @@
                             <p>Ідей не знайдено</p>
                         </div>
                     ) : (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
-                            {filteredIdeas.map(idea => (
-                                <div key={idea.id} className="bg-slate-800/40 border border-white/5 rounded-2xl p-5 hover:bg-slate-800/60 transition-all shadow-lg backdrop-blur-sm group">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <StatusBadge status={idea.status} />
-                                        <span className="text-xs font-mono text-slate-600">#{idea.id}</span>
-                                    </div>
-                                    
-                                    <h3 className="text-lg font-medium text-slate-200 mb-4 line-clamp-3">{idea.content}</h3>
-                                    
-                                    <div className="flex items-center justify-between text-sm text-slate-500 border-t border-white/5 pt-4">
-                                        <div className="flex items-center gap-3">
-                                            <span className="flex items-center gap-1"><User size={14} /> {idea.author || 'Анонім'}</span>
-                                            <span className="flex items-center gap-1"><Clock size={14} /> {new Date(idea.date).toLocaleDateString('uk-UA')}</span>
+                        <>
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
+                                {currentItems.map(idea => (
+                                    <div key={idea.id} className="bg-slate-800/40 border border-white/5 rounded-2xl p-5 hover:bg-slate-800/60 transition-all shadow-lg backdrop-blur-sm group">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <StatusBadge status={idea.status} />
+                                            <span className="text-xs font-mono text-slate-600">#{idea.id}</span>
                                         </div>
                                         
-                                        <div className="flex items-center gap-2">
-                                            <button 
-                                                onClick={() => handleVote(idea.id, 'up')}
-                                                disabled={localVotes.support[idea.id] || localVotes.reject[idea.id]}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${localVotes.support[idea.id] ? 'bg-green-500/20 text-green-400' : 'bg-white/5 hover:bg-white/10'}`}
-                                            >
-                                                <ThumbsUp size={16} /> <span>{idea.upvotes || 0}</span>
-                                            </button>
+                                        <h3 className="text-lg font-medium text-slate-200 mb-4 line-clamp-3">{idea.content}</h3>
+                                        
+                                        <div className="flex items-center justify-between text-sm text-slate-500 border-t border-white/5 pt-4">
+                                            <div className="flex items-center gap-3">
+                                                <span className="flex items-center gap-1"><User size={14} /> {idea.author || 'Анонім'}</span>
+                                                <span className="flex items-center gap-1"><Clock size={14} /> {new Date(idea.date).toLocaleDateString('uk-UA')}</span>
+                                            </div>
                                             
-                                            <button 
-                                                onClick={() => handleVote(idea.id, 'down')}
-                                                disabled={localVotes.support[idea.id] || localVotes.reject[idea.id]}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${localVotes.reject[idea.id] ? 'bg-red-500/20 text-red-400' : 'bg-white/5 hover:bg-white/10'}`}
-                                            >
-                                                <ThumbsDown size={16} /> <span>{idea.downvotes || 0}</span>
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <button 
+                                                    onClick={() => handleVote(idea.id, 'up')}
+                                                    disabled={localVotes.support[idea.id] || localVotes.reject[idea.id]}
+                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${localVotes.support[idea.id] ? 'bg-green-500/20 text-green-400' : 'bg-white/5 hover:bg-white/10'}`}
+                                                >
+                                                    <ThumbsUp size={16} /> <span>{idea.upvotes || 0}</span>
+                                                </button>
+                                                
+                                                <button 
+                                                    onClick={() => handleVote(idea.id, 'down')}
+                                                    disabled={localVotes.support[idea.id] || localVotes.reject[idea.id]}
+                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${localVotes.reject[idea.id] ? 'bg-red-500/20 text-red-400' : 'bg-white/5 hover:bg-white/10'}`}
+                                                >
+                                                    <ThumbsDown size={16} /> <span>{idea.downvotes || 0}</span>
+                                                </button>
 
-                                            <button 
-                                                onClick={() => setSelectedIdea(idea)}
-                                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-blue-400"
-                                            >
-                                                <MessageSquare size={16} />
-                                            </button>
+                                                <button 
+                                                    onClick={() => setSelectedIdea(idea)}
+                                                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-blue-400"
+                                                >
+                                                    <MessageSquare size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
+                                ))}
+                            </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex justify-center items-center gap-2 mt-8 pb-8">
+                                    <button 
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-300 hover:text-white"
+                                    >
+                                        <ChevronLeft size={20} />
+                                    </button>
+                                    
+                                    <div className="flex gap-1 overflow-x-auto max-w-[200px] md:max-w-none scrollbar-hide">
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                            <button
+                                                key={page}
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors flex-shrink-0
+                                                    ${currentPage === page 
+                                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25' 
+                                                        : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white'
+                                                    }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <button 
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-300 hover:text-white"
+                                    >
+                                        <ChevronRight size={20} />
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
+                            )}
+                        </>
                     )}
 
                     {selectedIdea && (
