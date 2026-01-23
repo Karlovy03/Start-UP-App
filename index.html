@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Start-UP - Платформа інновацій НПУ</title>
-    
+
     <!-- Підключення Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Налаштування Tailwind -->
     <script>
         tailwind.config = {
@@ -49,14 +50,33 @@
 
     <style>
         /* Додаткові стилі для скролбару та ефектів */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        .drop-shadow-glow { filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.3)); }
-        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .drop-shadow-glow {
+            filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.3));
+        }
+
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
     </style>
 </head>
+
 <body class="bg-slate-950 text-slate-100">
     <div id="root"></div>
 
@@ -64,9 +84,9 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useMemo } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { 
-            Home, Lightbulb, Database, Phone, Search, ThumbsUp, ThumbsDown, 
-            MessageSquare, Send, User, Clock, Menu, X, ChevronRight, ChevronLeft, ShieldAlert, Loader2 
+        import {
+            Home, Lightbulb, Database, Phone, Search, ThumbsUp, ThumbsDown,
+            MessageSquare, Send, User, Clock, Menu, X, ChevronRight, ChevronLeft, ShieldAlert, Loader2
         } from 'lucide-react';
 
         // --- КОНФІГУРАЦІЯ ---
@@ -94,12 +114,12 @@
                 onClick={onClick}
                 className={`
                     flex items-center gap-2 transition-all duration-300
-                    ${isMobile 
-                        ? 'flex-col text-xs p-2 justify-center w-full' 
+                    ${isMobile
+                        ? 'flex-col text-xs p-2 justify-center w-full'
                         : 'px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/10'
                     }
-                    ${isActive 
-                        ? 'text-yellow-400 font-bold bg-white/5 shadow-[0_0_15px_rgba(250,204,21,0.2)]' 
+                    ${isActive
+                        ? 'text-yellow-400 font-bold bg-white/5 shadow-[0_0_15px_rgba(250,204,21,0.2)]'
                         : 'text-slate-400 hover:text-white'
                     }
                 `}
@@ -113,7 +133,7 @@
             let colorClass = "bg-blue-500/20 text-blue-300 border-blue-500/30";
             let label = status || "Нова";
             const lower = label.toLowerCase();
-            
+
             if (lower.includes("робот")) colorClass = "bg-green-500/20 text-green-300 border-green-500/30";
             if (lower.includes("відхил")) colorClass = "bg-red-500/20 text-red-300 border-red-500/30";
 
@@ -130,7 +150,7 @@
             const [ideas, setIdeas] = useState([]);
             const [loading, setLoading] = useState(false);
             const [notification, setNotification] = useState(null);
-            
+
             const [localVotes, setLocalVotes] = useState(() => {
                 try {
                     return JSON.parse(localStorage.getItem('npu_ideas_votes')) || { support: {}, reject: {} };
@@ -144,11 +164,23 @@
                 try {
                     const response = await fetch(`${API_URL}?action=getData&t=${new Date().getTime()}`);
                     if (!response.ok) throw new Error("Network error");
+
                     const data = await response.json();
-                    setIdeas(data.reverse());
+
+                    // Перевірка на помилку від сервера
+                    if (data.status === 'error') {
+                        throw new Error(data.message || "Server Error");
+                    }
+
+                    if (Array.isArray(data)) {
+                        setIdeas(data.reverse());
+                    } else {
+                        console.warn("API Data format error:", data);
+                        setIdeas([]);
+                    }
                 } catch (error) {
-                    console.warn("API Error:", error);
-                    showNotify("Помилка завантаження даних (можливо API недоступний)", "error");
+                    console.error("API Error details:", error);
+                    showNotify("Помилка завантаження: " + error.message, "error");
                 } finally {
                     setLoading(false);
                 }
@@ -188,7 +220,7 @@
                                 <Logo />
                                 <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Start-UP</span>
                             </div>
-                            
+
                             <nav className="hidden md:flex gap-2">
                                 <NavItem icon={Home} label="Головна" isActive={activeTab === 'home'} onClick={() => setActiveTab('home')} />
                                 <NavItem icon={Lightbulb} label="Подати ідею" isActive={activeTab === 'submit'} onClick={() => setActiveTab('submit')} />
@@ -197,9 +229,9 @@
                             </nav>
 
                             <div className="md:hidden text-sm font-medium text-slate-400">
-                                {activeTab === 'home' ? 'Головна' : 
-                                activeTab === 'submit' ? 'Нова ідея' :
-                                activeTab === 'bank' ? 'Банк ідей' : 'Контакти'}
+                                {activeTab === 'home' ? 'Головна' :
+                                    activeTab === 'submit' ? 'Нова ідея' :
+                                        activeTab === 'bank' ? 'Банк ідей' : 'Контакти'}
                             </div>
                         </div>
                     </header>
@@ -245,7 +277,7 @@
                             Платформа інновацій НПУ
                         </div>
                         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white drop-shadow-lg">
-                            Твоя ідея змінить <br/>
+                            Твоя ідея змінить <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-600">
                                 Майбутнє Поліції
                             </span>
@@ -332,12 +364,12 @@
                                 <label className="text-sm font-medium text-slate-300 ml-1">Ваше ім'я (необов'язково)</label>
                                 <div className="relative">
                                     <User className="absolute left-4 top-3.5 text-slate-500" size={18} />
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         placeholder="Андрій Петренко"
                                         className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500/50 transition-all outline-none text-white placeholder-slate-600"
                                         value={formData.author}
-                                        onChange={e => setFormData({...formData, author: e.target.value})}
+                                        onChange={e => setFormData({ ...formData, author: e.target.value })}
                                     />
                                 </div>
                             </div>
@@ -346,30 +378,30 @@
                                 <label className="text-sm font-medium text-slate-300 ml-1">Телефон (необов'язково)</label>
                                 <div className="relative">
                                     <Phone className="absolute left-4 top-3.5 text-slate-500" size={18} />
-                                    <input 
-                                        type="tel" 
+                                    <input
+                                        type="tel"
                                         placeholder="+380 XX XXX XX XX"
                                         className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500/50 transition-all outline-none text-white placeholder-slate-600"
                                         value={formData.phone}
-                                        onChange={e => setFormData({...formData, phone: e.target.value})}
+                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-300 ml-1">Опис ідеї *</label>
-                                <textarea 
+                                <textarea
                                     rows="6"
                                     placeholder="Я пропоную..."
                                     required
                                     className="w-full bg-slate-900/50 border border-white/10 rounded-xl p-4 focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500/50 transition-all outline-none text-white placeholder-slate-600 resize-none"
                                     value={formData.content}
-                                    onChange={e => setFormData({...formData, content: e.target.value})}
+                                    onChange={e => setFormData({ ...formData, content: e.target.value })}
                                 ></textarea>
                             </div>
 
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 disabled={isSubmitting}
                                 className="w-full bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-slate-900 font-bold py-4 rounded-xl shadow-lg transform active:scale-95 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -394,8 +426,8 @@
             const itemsPerPage = 10;
 
             const filteredIdeas = useMemo(() => {
-                return ideas.filter(idea => 
-                    (idea.content && idea.content.toLowerCase().includes(search.toLowerCase())) || 
+                return ideas.filter(idea =>
+                    (idea.content && idea.content.toLowerCase().includes(search.toLowerCase())) ||
                     (idea.author && idea.author.toLowerCase().includes(search.toLowerCase()))
                 );
             }, [ideas, search]);
@@ -435,9 +467,9 @@
                     <div className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl py-4 -mx-4 px-4 md:mx-0 md:px-0 border-b md:border-none border-white/5">
                         <div className="relative">
                             <Search className="absolute left-4 top-3.5 text-slate-500" size={20} />
-                            <input 
-                                type="text" 
-                                placeholder="Пошук ідей..." 
+                            <input
+                                type="text"
+                                placeholder="Пошук ідей..."
                                 className="w-full bg-slate-900 border border-white/10 rounded-2xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 outline-none text-white placeholder-slate-600 shadow-inner"
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
@@ -464,25 +496,25 @@
                                             <StatusBadge status={idea.status} />
                                             <span className="text-xs font-mono text-slate-600">#{idea.id}</span>
                                         </div>
-                                        
+
                                         <h3 className="text-lg font-medium text-slate-200 mb-4 line-clamp-3">{idea.content}</h3>
-                                        
+
                                         <div className="flex items-center justify-between text-sm text-slate-500 border-t border-white/5 pt-4">
                                             <div className="flex items-center gap-3">
                                                 <span className="flex items-center gap-1"><User size={14} /> {idea.author || 'Анонім'}</span>
                                                 <span className="flex items-center gap-1"><Clock size={14} /> {new Date(idea.date).toLocaleDateString('uk-UA')}</span>
                                             </div>
-                                            
+
                                             <div className="flex items-center gap-2">
-                                                <button 
+                                                <button
                                                     onClick={() => handleVote(idea.id, 'up')}
                                                     disabled={localVotes.support[idea.id] || localVotes.reject[idea.id]}
                                                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${localVotes.support[idea.id] ? 'bg-green-500/20 text-green-400' : 'bg-white/5 hover:bg-white/10'}`}
                                                 >
                                                     <ThumbsUp size={16} /> <span>{idea.upvotes || 0}</span>
                                                 </button>
-                                                
-                                                <button 
+
+                                                <button
                                                     onClick={() => handleVote(idea.id, 'down')}
                                                     disabled={localVotes.support[idea.id] || localVotes.reject[idea.id]}
                                                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${localVotes.reject[idea.id] ? 'bg-red-500/20 text-red-400' : 'bg-white/5 hover:bg-white/10'}`}
@@ -490,7 +522,7 @@
                                                     <ThumbsDown size={16} /> <span>{idea.downvotes || 0}</span>
                                                 </button>
 
-                                                <button 
+                                                <button
                                                     onClick={() => setSelectedIdea(idea)}
                                                     className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-blue-400"
                                                 >
@@ -505,22 +537,22 @@
                             {/* Pagination Controls */}
                             {totalPages > 1 && (
                                 <div className="flex justify-center items-center gap-2 mt-8 pb-8">
-                                    <button 
+                                    <button
                                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                         disabled={currentPage === 1}
                                         className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-300 hover:text-white"
                                     >
                                         <ChevronLeft size={20} />
                                     </button>
-                                    
+
                                     <div className="flex gap-1 overflow-x-auto max-w-[200px] md:max-w-none scrollbar-hide">
                                         {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                                             <button
                                                 key={page}
                                                 onClick={() => setCurrentPage(page)}
                                                 className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors flex-shrink-0
-                                                    ${currentPage === page 
-                                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25' 
+                                                    ${currentPage === page
+                                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
                                                         : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white'
                                                     }`}
                                             >
@@ -529,7 +561,7 @@
                                         ))}
                                     </div>
 
-                                    <button 
+                                    <button
                                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                         disabled={currentPage === totalPages}
                                         className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-300 hover:text-white"
@@ -542,9 +574,9 @@
                     )}
 
                     {selectedIdea && (
-                        <IdeaModal 
-                            idea={selectedIdea} 
-                            onClose={() => setSelectedIdea(null)} 
+                        <IdeaModal
+                            idea={selectedIdea}
+                            onClose={() => setSelectedIdea(null)}
                             showNotify={showNotify}
                         />
                     )}
@@ -617,7 +649,7 @@
                             <h2 className="text-xl font-bold text-white">Ідея #{idea.id}</h2>
                             <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full text-slate-400 hover:text-white"><X size={20} /></button>
                         </div>
-                        
+
                         <div className="bg-slate-800/50 rounded-xl p-4 mb-6 text-slate-300 leading-relaxed overflow-y-auto flex-shrink-0 max-h-[30vh] border border-white/5">
                             {idea.content}
                         </div>
@@ -626,7 +658,7 @@
                             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
                                 <MessageSquare size={14} /> Обговорення
                             </h3>
-                            
+
                             <div className="flex-grow overflow-y-auto space-y-3 mb-4 pr-2">
                                 {isLoadingComments ? (
                                     <div className="text-center py-4 text-slate-500"><Loader2 className="animate-spin mx-auto" /></div>
@@ -646,23 +678,23 @@
                             </div>
 
                             <div className="space-y-3 pt-3 border-t border-white/10 mt-auto">
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     placeholder="Ваш нікнейм"
                                     className="w-full bg-slate-950/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500/50 outline-none"
                                     value={authorName}
                                     onChange={e => setAuthorName(e.target.value)}
                                 />
                                 <div className="flex gap-2">
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         placeholder="Ваш коментар..."
                                         className="flex-1 bg-slate-950/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500/50 outline-none"
                                         value={commentText}
                                         onChange={e => setCommentText(e.target.value)}
                                         onKeyDown={e => e.key === 'Enter' && handlePostComment()}
                                     />
-                                    <button 
+                                    <button
                                         onClick={handlePostComment}
                                         disabled={isPosting}
                                         className="bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
@@ -720,7 +752,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-yellow-500"></div>
                     </div>
                 </div>
@@ -732,4 +764,5 @@
         root.render(<App />);
     </script>
 </body>
+
 </html>
